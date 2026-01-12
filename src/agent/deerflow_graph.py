@@ -1,10 +1,7 @@
 
 import logging
 
-from langgraph.graph import START, END, StateGraph, MessagesState   
-
-from agent.deerflow.types import State
-from agent.deerflow.nodes import coordinator_node, background_investigation_node, planner_node
+from agent.deerflow.graph.builder import build_deerflow_graph
 
 
 logging.basicConfig(
@@ -16,12 +13,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-builder = StateGraph(State)
 
-builder.add_edge(START, 'coordinator')
-builder.add_node('coordinator', coordinator_node)
-builder.add_node("background_investigator", background_investigation_node)
-builder.add_node("planner", planner_node)
-builder.add_edge("background_investigator", "planner")
-builder.add_edge('coordinator', END)
-deerflow_graph = builder.compile()
+
+deerflow_graph = build_deerflow_graph()
