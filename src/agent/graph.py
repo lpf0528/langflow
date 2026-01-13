@@ -5,11 +5,7 @@ from langchain.chat_models import init_chat_model
 from dotenv import load_dotenv
 load_dotenv()
 
-model = init_chat_model(
-    "gpt-4o-mini",
-    temperature=0,
-    api_key=os.getenv("OPENAI_API_KEY")
-)
+
 
 
 # Define tools
@@ -49,7 +45,7 @@ def divide(a: int, b: int) -> float:
 # Augment the LLM with tools
 tools = [add, multiply, divide]
 tools_by_name = {tool.name: tool for tool in tools}
-model_with_tools = model.bind_tools(tools)
+
 
 # Step 2: Define state
 
@@ -69,6 +65,12 @@ from langchain.messages import SystemMessage
 def llm_call(state: dict):
     """LLM decides whether to call a tool or not"""
 
+    model = init_chat_model(
+        "gpt-4o-mini",
+        temperature=0,
+        api_key=os.getenv("OPENAI_API_KEY")
+    )
+    model_with_tools = model.bind_tools(tools)
     return {
         "messages": [
             model_with_tools.invoke(

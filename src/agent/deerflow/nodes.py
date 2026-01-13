@@ -2,10 +2,11 @@
 import json
 import logging
 
+import re
 from typing import Literal
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.runnables.config import RunnableConfig
-from langgraph.types import Command
+from langgraph.types import Command, interrupt
 from agent.deerflow.config.agents import AGENT_LLM_MAP
 from agent.deerflow.config.configuration import Configuration
 from agent.deerflow.llms.llm import get_llm_by_type
@@ -184,6 +185,8 @@ def planner_node(state: State, config: RunnableConfig):
     logger.info('规划器节点 is running.')
     
     configuration = Configuration.from_runnable_config(config)
+
+    # 1、用户的话题
     modified_state = state.copy()
     modified_state['messages'] = [
         {'role':'user', 'content':state['research_topic']}
@@ -215,21 +218,66 @@ def planner_node(state: State, config: RunnableConfig):
     logger.info(f'规划器节点 回复: {full_response}')
 
     curr_plan = json.loads(full_response)
-    # 从相应中提取计划内容
+    # 5、处理规划内容
     curr_plan = json.loads(curr_plan.get('content', '{}'))
-
+    new_plan = Plan.model_validate(curr_plan)
+    # 是否有足够的上下文
     if isinstance(curr_plan, dict) and curr_plan.get('has_enough_context'):
-        new_plan = Plan.model_validate(curr_plan)
+        # 6、有足够的上下文，生成报告
         return Command(update={
             'messages':[AIMessage(content=full_response, name='planner')],
             'current_plan': new_plan
-        }, goto='__end__')
-
+        }, goto='reporter')
+    # 7、没有足够的上下文，等待用户反馈
     return Command(update={
         "messages": [AIMessage(content=full_response, name="planner")],
-        "current_plan": full_response,
+        "current_plan": new_plan,
     }, goto='human_feedback')
 
+
+
+def human_feedback_node(state: State, config: RunnableConfig):
+    # 1、是否自动接受计划
+    if not state.get('auto_accepted_plan', False):
+        # 不自动接收：等待用户反馈
+        user_feedback = interrupt('Please Review the Plan.')
+        if not user_feedback:
+            # 没有用户反馈，返回计划节点生成新的计划
+            # TODO:提取在状态转换中应该保留的元数据/配置字段。
+            return Command(goto='planner')
+        user_feedback = str(user_feedback).strip().upper()
+
+        # 是否接受计划
+        if user_feedback.startswith('[EDIT_PLAN]'):
+            # 不接受计划，返回计划节点
+            return Command(update={
+                'messages':[
+                    HumanMessage(content=user_feedback, name='feedback')
+                ]
+            },goto='planner')
+        elif user_feedback.startswith('[ACCEPTED]'):
+            # 接受计划，直接执行
+            pass
+        else:
+            # 未知行为：重回计划节点
+            return Command(goto='planner')
+    goto = "research_team"
+    # 接收计划
+    plan_iterations = state.get('plan_iterations', 0)
+    plan_iterations += 1
+    return Command(update={
+        'plan_iterations':plan_iterations,
+    }, goto=goto)
+    
+
+        
+
+    # 否：人在环中：接收用户反馈
+
+    # -- 没有反馈：去向计划节点
+    # -- 编辑计划：加上用户反馈 -> 计划节点
+    
+    # 接受计划：直接执行
 
 
 

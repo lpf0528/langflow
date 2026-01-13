@@ -24,3 +24,6 @@ class ChatRequest(BaseModel):
     thread_id: Optional[str] = Field(   
         "__default__", description="A specific conversation identifier"
     )
+    enable_clarification: Optional[bool] = Field(
+        False, description="Whether to enable clarification questions"
+    )
