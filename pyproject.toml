@@ -9,14 +9,20 @@ readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
 dependencies = [
+    "alembic>=1.18.1",
     "fastapi>=0.128.0",
     "jinja2>=3.1.6",
     "langchain>=1.2.3",
     "langchain-community>=0.4.1",
     "langchain-openai>=1.1.7",
     "langgraph>=1.0.0",
+    "psycopg>=3.3.2",
+    "psycopg-binary>=3.3.2",
+    "pydantic>=2.12.5",
     "python-dotenv>=1.0.1",
+    "sqlmodel>=0.0.31",
     "tavily-python>=0.7.17",
+    "uvicorn>=0.38.0",
 ]
 
 

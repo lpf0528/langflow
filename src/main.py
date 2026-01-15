@@ -1,7 +1,6 @@
-from tkinter import Y
-from typing import Any, List, Union, cast
+from contextlib import asynccontextmanager
+from typing import Any, List, cast
 import json, logging
-from _pytest.compat import safe_getattr
 from fastapi import FastAPI
 from langchain_core.messages import AIMessageChunk, BaseMessage, ToolMessage
 from langgraph.checkpoint.memory import MemorySaver
@@ -9,13 +8,39 @@ from langgraph.graph import StateGraph
 from fastapi.responses import StreamingResponse
 from agent.deerflow.graph.builder import build_deerflow_graph
 from agent.deerflow.utiils.json_utils import sanitize_args
-from .chat_request import ChatRequest
+from .apps.chat_request import ChatRequest
 from uuid import uuid4
+from alembic.config import Config
+from alembic import command
+from .apps.api import api_router
+from .apps.common.config import settings
 
-app = FastAPI()
 logger = logging.getLogger(__name__)
 memory = MemorySaver()
 graph = build_deerflow_graph(checkpointer=memory)
+
+
+
+def run_migrations():
+    # 使用 Alembic 库来进行数据库迁移操作。
+    alembic_cfg = Config("alembic.ini")
+    command.upgrade(alembic_cfg, "head")
+
+
+@asynccontextmanager # 异步上下文管理器
+async def lifespan(app: FastAPI):
+    # 应用启动时执行
+    # run_migrations()
+    yield
+    print("应用关闭")
+
+
+app = FastAPI(
+    lifespan=lifespan, # 生命周期管理
+)
+
+app.include_router(api_router, prefix=settings.API_V1_STR)
+
 
 @app.post('/api/chat/stream')
 async def stream_chat(request: ChatRequest):
@@ -156,14 +181,6 @@ def _process_tool_call_chunks(tool_call_chunks: List[AIMessageChunk]):
     
     return chunks
 
-
-
-
-
-
-
-    
-    
     
 async def _stream_graph_events(graph: StateGraph, workflow_input, workflow_config, thread_id):
 

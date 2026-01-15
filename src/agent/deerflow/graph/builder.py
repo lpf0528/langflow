@@ -12,7 +12,7 @@ def _build_base_deerflow_graph() -> StateGraph:
     builder.add_node('coordinator', coordinator_node)
     builder.add_node("background_investigator", background_investigation_node)
     builder.add_node("planner", planner_node)
-    builder.add_node("human_feedback", human_feedback_node)
+    # builder.add_node("human_feedback", human_feedback_node)
     builder.add_edge("background_investigator", "planner")
     builder.add_edge('coordinator', END)
     return builder

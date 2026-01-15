@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "src.server:app",
+                "src.main:app",
                 "--reload",
                 "--host", "0.0.0.0",  // 您可以替换为您需要的 IP
                 "--port", "8001"      
