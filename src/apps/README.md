@@ -2,7 +2,7 @@
 <!-- 数据库迁移 -->
 ```shell
 # 初始化
-alembic init -t sync alembic
+alembic init -t async alembic
 ```
 
 ```python
