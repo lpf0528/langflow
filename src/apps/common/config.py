@@ -1,10 +1,10 @@
 import urllib.parse
 from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings): 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-    )
+    # model_config = SettingsConfigDict(
+    #     env_file=".env",
+    #     env_file_encoding="utf-8",
+    # )
 
     POSTGRES_SERVER: str = '127.0.0.1'
     POSTGRES_PORT: int = 5432
