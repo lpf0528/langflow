@@ -1,22 +1,26 @@
-from typing import Any, List
+from datetime import timedelta
+from typing import Any, List, Optional, Dict
 from fastapi.exceptions import HTTPException
 from mcp import StdioServerParameters, ClientSession
 from mcp.client.stdio import stdio_client
 
 
 async def _get_tools_from_client_session(
-    client_content_manager:Any, timeout_seconds:int=10
-)->List:
+    client_content_manager: Any, timeout_seconds: int = 10
+) -> List:
     """从客户端会话中获取工具"""
     async with client_content_manager as (read, write):
-        async with ClientSession(read, write, read_timeout_seconds=timeout_seconds) as session:
+        async with ClientSession(
+            read, write, read_timeout_seconds=timedelta(seconds=timeout_seconds)
+        ) as session:
             await session.initialize()
             # https://github.com/modelcontextprotocol/python-sdk
             listed_tools = await session.list_tools()
             return listed_tools.tools
 
 
-async def load_mcp_tools(    server_type: str,
+async def load_mcp_tools(
+    server_type: str,
     command: Optional[str] = None,
     args: Optional[List[str]] = None,
     url: Optional[str] = None,
@@ -36,9 +40,11 @@ async def load_mcp_tools(    server_type: str,
             args=args,
             env=env,
         )
-        return await _get_tools_from_client_session(stdio_client(server_params), timeout_seconds)
+        return await _get_tools_from_client_session(
+            stdio_client(server_params), timeout_seconds
+        )
     elif server_type == "sse":
-       pass
+        pass
     elif server_type == "streamable_http":
         pass
     else:

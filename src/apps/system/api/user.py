@@ -1,4 +1,3 @@
-
 from src.apps.common.deps import SessionDep
 from src.apps.system.models.user import UserModel
 from src.apps.system.schemas.system_schema import UserCreator
@@ -9,7 +8,7 @@ from fastapi.exceptions import HTTPException
 router = APIRouter(tags=["system_user"], prefix="/user")
 
 
-@router.post('')
+@router.post("")
 async def create_user(session: SessionDep, creator: UserCreator):
 
     if check_account_exists(session=session, account=creator.account):
