@@ -11,6 +11,8 @@ from prompts import db_prompt
 
 load_dotenv()
 
+# https://docs.langchain.com/oss/python/langchain/sql-agent#6-implement-human-in-the-loop-review
+
 
 def create_sql_deep_agent():
     # 获取基本路径
