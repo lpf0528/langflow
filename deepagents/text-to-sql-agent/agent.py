@@ -43,7 +43,7 @@ def create_sql_deep_agent():
         middleware=[
             HumanInTheLoopMiddleware(
                 interrupt_on={"sql_db_query": True},
-                description_prefix="Tool execution pending approval",
+                description_prefix="工具执行待批准",
             ),
         ],
         checkpointer=InMemorySaver(),
